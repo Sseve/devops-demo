@@ -14,6 +14,8 @@
   - 登录jenkins的web管理页面,设置hello-jenkins/Jenkinsfile文件中对应变量的参数值(仔细核对)
   - 将hell-jenkins中的deploy.sh脚本部署到部署服务的主机上的/usr/bin目录下;并加上可执行权限
   - 从gitlab中读取hello-jenkins/Jenkinsfile文件到jenkins系统中进行任务构建即可
+
+  - 消息通知和k8s部署服务还未完成
 ```
 
 * *架构图*
