@@ -1,0 +1,8 @@
+version: "0.1"
+services:
+  web:
+    image: 'web:latest'
+    container_name: web
+    ports:
+      - 8000:8000
+

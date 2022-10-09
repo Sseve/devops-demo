@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+
+    environment {
+        harborUser = 'admin'
+        harborPass = 'Harbor12345'
+        harborAddr = '172.16.9.129:80'
+        harborRepo = 'repo'
+    }
+
+    stages {
+        stage('拉取代码') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '${tag}']], extensions: [], userRemoteConfigs: [[url: 'http://172.16.9.129:8929/root/hello-jenkins.git']]])
+            }
+        }
+        stage('构建镜像') {
+            steps {
+                sh '''
+                echo y |docker image prune
+                docker build -t ${JOB_NAME}:${tag} /var/jenkins_home/workspace/hello-jenkins/'''
+            }
+        }
+        stage('推送镜像') {
+            steps {
+                sh '''docker login -u ${harborUser} -p ${harborPass} ${harborAddr}
+docker tag ${JOB_NAME}:${tag} ${harborAddr}/${harborRepo}/${JOB_NAME}:${tag}
+docker push ${harborAddr}/${harborRepo}/${JOB_NAME}:${tag}'''
+            }
+        }
+        stage('启动镜像') {
+            steps {
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'test', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: "deploy.sh ${harborAddr} ${harborRepo} ${JOB_NAME} ${tag} ${containerPort} ${hostPort} ${harborUser} ${harborPass}", execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            }
+        }
+    }
+}
